@@ -82,8 +82,8 @@ if st.button("Run Algorithms and Compute Makespan"):
                         xytext=(0, 3),
                         textcoords="offset points",
                         ha='center', va='bottom', fontsize=8)
-                        
-        st.pyplot(fig, width='content') # التعديل النهائي ليكون متوافقاً مع الإصدارات الحديثة بدون تحذيرات
+                    
+        st.pyplot(fig) # تم ضبطها بدون بارامترات زائدة لتتطابق تماماً مع إصدارات Streamlit
     else:
         st.warning("Scheduler module running with simulation results:")
         st.success("Execution completed successfully!")
