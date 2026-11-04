@@ -1,0 +1,55 @@
+{
+  "problem": "Unrelated parallel machine scheduling; minimize makespan",
+  "data_origin": "Synthetic, seeded; not real company data",
+  "matrix_generation": "round(work_j / machine_speed_m * affinity_jm + setup_jm, 2)",
+  "size_config": {
+    "Small": {
+      "jobs": 20,
+      "machines": 3,
+      "instance_seed": 501
+    },
+    "Medium": {
+      "jobs": 50,
+      "machines": 5,
+      "instance_seed": 601
+    },
+    "Large": {
+      "jobs": 100,
+      "machines": 8,
+      "instance_seed": 701
+    }
+  },
+  "runs_per_algorithm_size": 6,
+  "iterations": 80,
+  "population_or_swarm_or_ants": 32,
+  "stochastic_seeds": "12000 + size_index * 1000 + run_index, 0-based indices",
+  "algorithms": {
+    "GA": {
+      "crossover": "uniform",
+      "crossover_rate": 0.9,
+      "mutation_rate": "1 / jobs per gene",
+      "swap_rate": 0.25,
+      "elitism": 2,
+      "tournament_size": 3
+    },
+    "PSO": {
+      "inertia": 0.68,
+      "cognitive": 1.6,
+      "social": 1.6,
+      "velocity_limit": 2.0,
+      "exploration_rate": 0.012,
+      "rounding": "nearest int and clip"
+    },
+    "ACO": {
+      "alpha": 1.0,
+      "beta": 3.0,
+      "evaporation": 0.2,
+      "global_elite_weight": 1.5,
+      "pheromone_floor": 0.04,
+      "pheromone_ceiling": 10.0
+    }
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python_version": "3.14.5",
+  "time_metric": "wall time; machine/environment dependent"
+}
