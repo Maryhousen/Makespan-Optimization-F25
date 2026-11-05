@@ -145,6 +145,6 @@ Results are limited to the three benchmark instances and the specified experimen
 
 ## 11. Project Report and Team
 
-The final English project report contains the mathematical formulation, algorithm descriptions, experimental results, visualizations, conclusions, and individual student contributions.
+The final project report contains the mathematical formulation, algorithm descriptions, experimental results, visualizations, conclusions, and individual student contributions.
 
 **Team size:** 8 students.
