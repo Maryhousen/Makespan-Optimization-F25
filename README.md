@@ -1,84 +1,150 @@
-# مشروع خوارزميات التحسين | Fall 2026
+# Makespan Optimization for Task Scheduling on Heterogeneous Machines
 
-## عنوان المشروع
-**توزيع مهام الإنتاج على آلات غير متجانسة لتقليل زمن انتهاء جميع المهام (Makespan)**
+**Course:** Intelligent Algorithms (BIA601)  
+**Semester:** Fall 2026
 
-المشروع يطبّق ويقارن **الخوارزمية الجينية (GA)**، و**تحسين سرب الجسيمات (PSO)**، و**مستعمرة النمل (ACO)**. أُضيفت طريقة **Greedy** معياراً مرجعياً. الخوارزميات مكتوبة مباشرة بلغة Python، دون استخدام مكتبات جاهزة لخوارزميات التحسين. النتائج مبنية على **بيانات اصطناعية قابلة لإعادة التوليد** تحاكي ورشة إنتاج، وليست بيانات تشغيل فعلية لشركة.
+## 1. Project Overview
 
-## فكرة المسألة
-كل مهمة يجب إسنادها إلى آلة واحدة. تختلف مدة تنفيذ المهمة نفسها باختلاف الآلة. تنفّذ كل آلة المهام المسندة إليها بالتتابع، بينما تعمل الآلات بالتوازي. الهدف هو **تقليل أكبر مجموع لأزمنة العمل بين جميع الآلات**.
+This project implements and compares three intelligent optimization algorithms for scheduling independent tasks on heterogeneous machines:
 
-- تمثيل الحل: قائمة أعداد صحيحة `assignment[j] = machine_id`، ترقيم الآلات في الكود يبدأ بالصفر.
-- القيد: كل مهمة تُنفّذ على آلة واحدة فقط، دون تجزئة، ولا توجد تبعيات بين المهام.
-- دالة الهدف: `makespan = max(sum(duration[j][assignment[j]]) لكل آلة)`.
-- الحد السفلي النظري: `max(sum(min(duration[j])) / number_of_machines, max(min(duration[j])))`؛ وهو حد سفلي **وليس الحل الأمثل المثبت**.
+- Genetic Algorithm (GA)
+- Particle Swarm Optimization (PSO)
+- Ant Colony Optimization (ACO)
 
-## متطلبات التشغيل
-Python 3.10+ (بسبب استخدام type unions في التلميحات)، وMatplotlib للرسم. لا يحتاج المشروع إلى الإنترنت بعد تثبيت التبعية.
+A Greedy scheduling heuristic is used as a baseline for performance comparison.
 
-```bash
-python -m pip install -r requirements.txt
-```
+All three optimization algorithms are implemented in Python without relying on ready-made optimization algorithm libraries.
 
-## تنفيذ التجارب
-من داخل مجلد المشروع:
+The experiments use reproducible synthetic processing-time data representing a manufacturing workshop. The dataset does not contain actual company measurements.
 
-```bash
-python -m unittest discover -s tests -v
-python run_experiments.py
-```
+## 2. Problem Definition
 
-لإجراء تشغيل تجريبي أسرع:
+Each task must be assigned to exactly one machine. Processing times vary depending on the selected machine.
 
-```bash
-python run_experiments.py --runs 3 --iterations 40 --population 24 --output results_quick
-```
+Machines operate in parallel, while each machine processes its assigned tasks sequentially.
 
-الإعدادات الافتراضية (تطابق الأرقام في التقرير): **6 تشغيلات مستقلة لكل خوارزمية وحجم، و80 تكراراً، و32 فرداً/جسيماً/نملة**. مجموع الاختبارات = 3 أحجام × 3 خوارزميات × 6 تشغيلات = **54 اختباراً**. يجري تشغيل Greedy معياراً مرجعياً مرة لكل حجم.
+**Objective:** Minimize the makespan, defined as the maximum completion time across all machines.
 
-## البيانات وأحجام الاختبار
+The solution is represented by an integer array, where each element identifies the machine assigned to a particular task.
 
-| الحجم | عدد المهام | عدد الآلات | بذرة توليد الحالة |
+## 3. Implemented Algorithms
+
+| Algorithm | Main Mechanism | Stopping Criterion |
+|---|---|---|
+| GA | Tournament selection, uniform crossover, mutation, elitism | 80 generations |
+| PSO | Particle velocity and position updates, discrete assignment decoding | 80 iterations |
+| ACO | Pheromone-based probabilistic task assignments | 80 iterations |
+| Greedy | Assignments based on earliest expected completion time | Deterministic |
+
+Default parameters include 32 search elements per algorithm.
+
+## 4. Experimental Setup
+
+The algorithms are evaluated on three problem sizes:
+
+| Instance | Tasks | Machines | Random Seed |
 |---|---:|---:|---:|
 | Small | 20 | 3 | 501 |
 | Medium | 50 | 5 | 601 |
 | Large | 100 | 8 | 701 |
 
-تستخدم كل خوارزمية مصفوفة الأزمنة **نفسها تماماً** لكل حجم. تنشأ الأزمنة من عبء عمل المهمة وسرعة الآلة وملاءمتها للمهمة، مع زمن إعداد بسيط، وتُقرب إلى منزلتين عشريتين. بذرة كل تشغيل عشوائي هي `12000 + size_index*1000 + run_index` مع العد من الصفر؛ ويُعاد استعمال البذرة نفسها بين الخوارزميات للتماثل التنظيمي، لكن تسلسل الأرقام المستخدمة يختلف لاختلاف خطوات كل خوارزمية.
+Each algorithm is independently executed six times per problem size, using controlled random seeds.
 
-## آليات الخوارزميات
+**Total stochastic runs: 3 × 3 × 6 = 54**
 
-| الخوارزمية | آلية البحث | أهم الإعدادات | معيار التوقف |
-|---|---|---|---|
-| GA | اختيار بطولة، تقاطع موحد، طفرة وتبديل مهمتين مع احتفاظ بأفضل حلين | crossover=0.9, mutation=1/n, swap=0.25, tournament=3, elite=2 | 80 جيلاً |
-| PSO | مواضع مستمرة تُقرّب إلى معرفات آلات؛ تحديث سرعة وموضع + قفزات استكشاف قليلة | inertia=0.68, c1=c2=1.6, vmax=2, reset=0.012 | 80 تكراراً |
-| ACO | فيرومون لكل (مهمة، آلة)، استدلال يعتمد على وقت الانتهاء المتوقع، تبخر وتعزيز أفضل المسارات | alpha=1, beta=3, evaporation=0.2, elite=1.5 | 80 تكراراً |
+The experiments evaluate:
 
-**ملاحظة الإنصاف التجريبي:** تنفّذ GA وPSO عدد 2592 تقييماً لكل تشغيل، بينما تنفّذ ACO عدد 2561 تقييماً يشمل الحل الابتدائي. حجم العينات وعدد التكرارات موحدان تقريباً؛ وتختلف تكلفة بناء وتقييم المرشحين بحسب الخوارزمية، لذا جرى قياس زمن التنفيذ الفعلي أيضاً.
+- Solution quality (makespan)
+- Execution time
+- Convergence behavior
+- Mean performance and standard deviation
+- Improvement over the Greedy baseline
 
-## الملفات الناتجة تلقائياً
+## 5. Requirements
 
-- `results/instances/*.csv`: مصفوفات أزمنة تنفيذ المهام على الآلات لكل حجم.
-- `results/runs.csv`: سجل التجارب الـ54، متضمناً البذرة والنتيجة والزمن ومؤشر التقارب.
-- `results/summary.csv`: متوسط الأداء والانحراف المعياري لكل خوارزمية وحجم.
-- `results/convergence.csv`: متوسط أفضل حل حتى كل تكرار والانحراف المعياري.
-- `results/assignments/*.csv`: التوزيع الأفضل المسجل للمهام على الآلات بكل خوارزمية وحجم.
-- `results/plots/convergence_*.png`: ثلاثة منحنيات لتطور أفضل قيمة هدف.
-- `results/plots/solution_quality.png`: مقارنة جودة الحلول مع أشرطة التشتت.
-- `results/plots/runtime.png`: مقارنة زمن التنفيذ.
-- `results/metadata.json`: الإعدادات والبذور وإصدار Python وبيئة التشغيل.
-- `report/Report_Arabic.pdf`: التقرير النهائي؛ ونسخته القابلة للتحرير بصيغة DOCX.
+- Python 3.10 or newer
+- Dependencies listed in `requirements.txt`
 
-## تفسير المقاييس
+Install the required packages:
 
-**Best Fitness**: أصغر زمن لإنهاء جميع المهام، بالدقائق؛ الأصغر أفضل. **Runtime**: الوقت المستغرق بالثواني، وهو حساس لمواصفات الجهاز والضغط عليه. **Standard Deviation**: انحراف معياري لعينة التشغيلات الست، والأصغر يدل على نتائج أكثر اتساقاً. **Convergence Iteration**: أول تكرار بلغ فيه التشغيل أفضل قيمة حققها في النهاية، وليس إثباتاً لبلوغ الحل الأمثل رياضياً. **Improvement %**: مقدار التحسن في Makespan مقارنة بـGreedy؛ رقم موجب يعني تحسناً.
+```bash
+python -m pip install -r requirements.txt
+```
 
-## التحقق
+## 6. Running the Project
 
-تختبر `tests/test_scheduler.py` صحة دالة الهدف، والتحقق من جميع القيود، وإعادة الإنتاج من البذرة، والتحسن أو التعادل مع Greedy، وعدم تراجع أفضل قيمة عبر التكرارات، بالإضافة إلى مقارنة الحد السفلي مع حل أمثل محسوب بعدّ شامل لحالة صغيرة.
+Execute the following commands from the repository root.
 
-## القيود العلمية
-البيانات اصطناعية، ولا تتضمن المواعيد النهائية الفردية أو أوقات تبديل الإعداد بين المهمات أو التوقفات العشوائية أو تبعيات بين المهام. المقارنة تخص هذه الحالات والإعدادات والبذور، ولا تضمن أفضلية عامة لأي خوارزمية أو الوصول إلى الأمثل العالمي. يمكن استبدال البيانات بمصفوفات أزمنة من منشأة حقيقية مستقبلاً.
+**Run the automated tests:**
 
-## الفريق والتسليم
-التكليف يشترط **6 إلى 9 طلاب**، مع توضيح دور كل عضو. أضف الأسماء الحقيقية والمهام الفعلية في ملف `TEAM_ROLES.md` وفي نهاية التقرير قبل التسليم. لا تُقدّم الأدوار الافتراضية على أنها أعمال أشخاص معينين. **الموعد النهائي: 12 نوفمبر 2026**.
+```bash
+python -m unittest discover -s tests -v
+```
+
+**Reproduce the benchmark experiments:**
+
+```bash
+python run_experiments.py
+```
+
+This command runs the 54 stochastic experiments and generates the results, statistical summaries, and visualizations.
+
+**Launch the optional interactive dashboard:**
+
+```bash
+streamlit run app.py
+```
+
+## 7. Project Structure
+
+| File / Directory | Description |
+|---|---|
+| `scheduler.py` | Problem definition, fitness evaluation, Greedy, GA, PSO, and ACO |
+| `run_experiments.py` | Benchmark execution, result aggregation, and plot generation |
+| `app.py` | Interactive Streamlit dashboard |
+| `requirements.txt` | Required Python dependencies |
+| `tests/` | Automated correctness and reproducibility tests |
+| `results/` | Benchmark data, CSV results, assignments, and figures |
+| `README.md` | Project documentation and execution instructions |
+
+## 8. Experimental Results
+
+The following algorithms achieved the lowest mean makespan for each problem size:
+
+| Instance | Best Algorithm | Mean Makespan | Improvement vs. Greedy |
+|---|---|---:|---:|
+| Small | GA | 118.65 min | 7.67% |
+| Medium | ACO | 200.57 min | 3.03% |
+| Large | GA | 220.75 min | 0.87% |
+
+GA achieved the lowest mean makespan in the Small and Large instances, while ACO performed best in the Medium instance.
+
+PSO did not improve upon the Greedy baseline in the Large instance under the tested configuration.
+
+These findings apply to the evaluated instances and parameters and do not establish global optimality.
+
+## 9. Generated Results
+
+The `results/` directory contains:
+
+- `runs.csv`: Individual benchmark runs and recorded performance.
+- `summary.csv`: Mean makespan, standard deviation, and runtime statistics.
+- `convergence.csv`: Convergence histories across iterations.
+- `instances/`: Generated processing-time matrices.
+- `assignments/`: Best recorded task-to-machine assignments.
+- `plots/`: Convergence, solution-quality, and runtime charts.
+- `metadata.json`: Experiment configuration and reproducibility metadata.
+
+The makespan results are reproducible using the same random seeds and implementation. Execution times may differ depending on the computing environment.
+
+## 10. Limitations
+
+The experiments use synthetic datasets and do not model task dependencies, individual deadlines, machine downtime, or sequence-dependent setup times.
+
+Results are limited to the three benchmark instances and the specified experimental settings.
+
+## 11. Project Report and Team
+
+The final English project report contains the mathematical formulation, algorithm descriptions, experimental results, visualizations, conclusions, and individual student contributions.
+
+**Team size:** 8 students.
